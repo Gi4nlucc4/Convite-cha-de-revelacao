@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7EADC">
+<title>Chá Revelação — Menino ou Menina?</title>
+<meta name="description" content="Um envelope lacrado, uma fumaça dourada e um segredo. Toque para abrir o convite.">
+
+<!-- ===== PRÉVIA NO WHATSAPP ================================================
+     Troque pela URL final. A og:image precisa ser link absoluto (https://),
+     1200x630px e menos de 300 KB, senão o WhatsApp não mostra a capa.
+========================================================================== -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://SEUDOMINIO.com.br/cha-revelacao">
+<meta property="og:title" content="Menino ou Menina? — Chá Revelação">
+<meta property="og:description" content="Toque para abrir o envelope e descobrir.">
+<meta property="og:image" content="https://SEUDOMINIO.com.br/cha-revelacao/capa.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   TOKENS — amostrados do seu próprio convite
+══════════════════════════════════════════════════════════════════════ */
+:root{
+  --creme:#F7EADC;
+  --creme-2:#EFDFCC;
+  --creme-3:#E6D2BB;
+  --papel:#FCF6EC;
+  --ouro:#C08B34;
+  --ouro-hi:#E7C179;
+  --ouro-dk:#8C5F1C;
+  --tinta:#6B4A2C;
+  --tinta-2:#8E6E4E;
+  --linha:rgba(192,139,52,.34);
+
+  --moldura:11px;
+  --pad:clamp(22px,6.5vw,44px);
+  --maxw:500px;
+
+  --ff-titulo:"Cinzel",Georgia,serif;
+  --ff-corpo:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --ff-script:"Great Vibes","Snell Roundhand",cursive;
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --slow:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--creme);
+  color:var(--tinta);
+  font-family:var(--ff-corpo);
+  font-size:18px;font-weight:400;line-height:1.62;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+body.travado{overflow:hidden;height:100%}
+img,video,canvas{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ouro);outline-offset:3px;border-radius:2px}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ASSINATURA — a moldura dourada do convite, fixa em volta da tela
+══════════════════════════════════════════════════════════════════════ */
+.moldura{position:fixed;inset:0;z-index:40;pointer-events:none}
+.moldura::before{
+  content:"";position:absolute;
+  inset:calc(var(--moldura) + env(safe-area-inset-top,0px)/2) var(--moldura)
+        calc(var(--moldura) + env(safe-area-inset-bottom,0px)/2);
+  border:1px solid var(--ouro);
+  box-shadow:inset 0 0 0 4px var(--creme),inset 0 0 0 5px rgba(192,139,52,.5);
+}
+.canto{position:absolute;width:46px;height:46px;color:var(--ouro)}
+.canto svg{width:100%;height:100%;fill:currentColor}
+.canto.ts{top:var(--moldura);left:var(--moldura)}
+.canto.td{top:var(--moldura);right:var(--moldura);transform:scaleX(-1)}
+.canto.bs{bottom:var(--moldura);left:var(--moldura);transform:scaleY(-1)}
+.canto.bd{bottom:var(--moldura);right:var(--moldura);transform:scale(-1)}
+.progresso{
+  position:absolute;left:var(--moldura);top:var(--moldura);height:2px;width:0;
+  background:linear-gradient(90deg,var(--ouro-hi),var(--ouro));opacity:.9;
+}
+
+/* estrelinhas de fundo, como as do convite */
+.ceu{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ceu i{position:absolute;color:var(--ouro-hi);font-size:11px;opacity:0;
+  animation:brilha 6s var(--ease) infinite}
+@keyframes brilha{0%,100%{opacity:0;transform:scale(.6)}50%{opacity:.55;transform:scale(1)}}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ATO 1 — O ENVELOPE
+   Vertical (a proporção precisa combinar com o convite que está dentro),
+   papel com textura, aba que dobra de verdade em 3D mostrando o forro,
+   lacre de cera com borda irregular e monograma afundado.
+══════════════════════════════════════════════════════════════════════ */
+.capa{
+  position:fixed;inset:0;z-index:60;display:grid;place-items:center;
+  padding:calc(var(--pad) + 10px);
+  background:
+    radial-gradient(58% 40% at 50% 44%,rgba(255,248,236,.9) 0%,rgba(255,248,236,0) 70%),
+    radial-gradient(120% 82% at 50% 34%,#FDF7EE 0%,var(--creme) 44%,#E2CCB2 100%);
+  transition:opacity 1.15s var(--ease),transform 1.4s var(--slow),visibility 1.15s;
+}
+.capa.saiu{opacity:0;visibility:hidden;pointer-events:none;transform:scale(1.05)}
+.capa__inner{width:100%;max-width:320px;text-align:center;animation:sobe 1.4s var(--slow) both}
+@keyframes sobe{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+.sobrescrito{
+  font-family:var(--ff-titulo);font-size:10.5px;font-weight:500;
+  letter-spacing:.34em;text-transform:uppercase;color:var(--ouro-dk);margin:0 0 6px;
+}
+.capa__script{font-family:var(--ff-script);font-size:clamp(31px,9.5vw,40px);
+  color:var(--ouro);line-height:1;margin:0 0 30px;
+  text-shadow:0 1px 0 rgba(255,255,255,.7)}
+
+/* — o palco dá a profundidade; sem isso a aba achata em vez de dobrar — */
+.palco{
+  width:min(64%,196px);margin:0 auto 30px;
+  perspective:1100px;perspective-origin:50% 34%;
+}
+.env{
+  position:relative;width:100%;aspect-ratio:5/7;
+  transform-style:preserve-3d;
+  animation:respira 7s ease-in-out infinite;
+}
+@keyframes respira{
+  0%,100%{transform:translateY(0) rotateX(4deg) rotateZ(-.4deg)}
+  50%    {transform:translateY(-7px) rotateX(4deg) rotateZ(.4deg)}
+}
+.env.aberto{animation-play-state:paused}
+
+/* sombra própria, quente, projetada no "chão" */
+.env::after{
+  content:"";position:absolute;left:8%;right:8%;bottom:-7%;height:16px;
+  background:radial-gradient(ellipse at 50% 50%,rgba(122,84,36,.34),transparent 72%);
+  filter:blur(5px);transform:translateZ(-40px);
+}
+
+/* textura de papel — barata e é o que tira o ar de wireframe */
+.papel-tex{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+}
+
+/* 1. corpo do envelope */
+.env__fundo{
+  position:absolute;inset:0;border-radius:3px;overflow:hidden;transform:translateZ(0);
+  background:linear-gradient(158deg,#FEFAF2 0%,#F4E7D2 46%,#E9D8BC 100%);
+  box-shadow:0 14px 30px rgba(122,84,36,.20),inset 0 0 0 1px rgba(192,139,52,.5);
+}
+
+/* 2. a arte, dentro do envelope, sobe quando abre */
+.env__cartao{
+  position:absolute;left:7%;right:7%;top:8%;bottom:6%;
+  background:var(--papel) center top/cover no-repeat;
+  box-shadow:0 3px 12px rgba(122,84,36,.3);
+  transform:translateY(4%) translateZ(1px);
+  transition:transform 1.1s var(--slow);
+  transition-delay:.42s;
+}
+.env.aberto .env__cartao{transform:translateY(-40%) translateZ(1px) scale(1.03)}
+
+/* 3. bolso da frente — cobre a arte quando fechado */
+.env__frente{
+  position:absolute;left:0;right:0;bottom:0;height:74%;z-index:3;
+  border-radius:0 0 3px 3px;overflow:hidden;transform:translateZ(3px);
+  background:linear-gradient(168deg,#FBF3E5 0%,#F1E2CA 58%,#E5D2B4 100%);
+  box-shadow:0 -1px 3px rgba(122,84,36,.13),inset 0 0 0 1px rgba(192,139,52,.42);
+  clip-path:polygon(0 0,50% 26%,100% 0,100% 100%,0 100%);
+}
+/* filete dourado impresso no bolso, ecoando a moldura do convite */
+.env__frente::after{
+  content:"";position:absolute;left:9px;right:9px;top:34%;bottom:9px;
+  border:1px solid rgba(192,139,52,.5);
+  box-shadow:inset 0 0 0 2.5px rgba(251,243,229,.9),inset 0 0 0 3.5px rgba(192,139,52,.3);
+}
+
+/* 4. a aba, com frente e forro — dobra pra trás em 3D */
+.env__aba{
+  position:absolute;left:0;right:0;top:0;height:52%;z-index:4;
+  transform-origin:top center;transform-style:preserve-3d;will-change:transform;
+  transform:translateZ(4px);transition:transform 1.05s var(--slow);
+}
+.env.aberto .env__aba{transform:translateZ(4px) rotateX(-168deg)}
+.env__aba span{
+  position:absolute;inset:0;backface-visibility:hidden;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+}
+.env__aba .face{
+  background:linear-gradient(178deg,#FEFBF4 0%,#F2E4CD 78%,#E7D6B8 100%);
+  box-shadow:0 2px 3px rgba(122,84,36,.16);
+}
+/* o forro: papel mais escuro com estrelinhas, como forro de envelope bom */
+.env__aba .forro{
+  transform:rotateX(180deg);
+  background:
+    radial-gradient(circle at 30% 30%,rgba(231,193,121,.5) 0 1.2px,transparent 1.6px),
+    radial-gradient(circle at 72% 62%,rgba(231,193,121,.4) 0 1px,transparent 1.4px),
+    linear-gradient(180deg,#D9BE93 0%,#C8A87A 100%);
+  background-size:22px 22px,17px 17px,100% 100%;
+}
+/* vinco onde a aba encosta */
+.env__vinco{
+  position:absolute;left:0;right:0;top:0;height:52%;z-index:2;pointer-events:none;
+  clip-path:polygon(0 0,100% 0,50% 100%);transform:translateZ(2px);
+  background:linear-gradient(180deg,rgba(122,84,36,.16),rgba(122,84,36,0) 55%);
+}
+
+/* 5. o lacre de cera */
+.env__lacre{
+  position:absolute;left:50%;top:50%;translate:-50% -50%;z-index:6;
+  width:38%;aspect-ratio:1;
+  transform:translateZ(6px) rotate(-7deg);transform-origin:center;
+  filter:drop-shadow(0 3px 5px rgba(90,60,16,.45));
+  transition:transform .55s var(--slow),opacity .5s var(--ease);
+}
+.env__lacre svg{width:100%;height:100%;overflow:visible}
+.env__lacre text{
+  font-family:var(--ff-titulo);font-weight:600;font-size:38px;
+  text-anchor:middle;dominant-baseline:central;
+}
+.env.aberto .env__lacre{transform:translateZ(6px) rotate(-7deg) scale(.55) translateY(6px);opacity:0}
+
+/* luz que vaza de dentro quando abre */
+.env__luz{
+  position:absolute;left:-30%;right:-30%;top:-24%;height:86%;z-index:5;
+  pointer-events:none;opacity:0;transform:translateZ(5px);
+  background:radial-gradient(ellipse at 50% 74%,rgba(255,238,196,.85),transparent 66%);
+  transition:opacity .9s var(--ease) .3s;
+}
+.env.aberto .env__luz{opacity:1}
+
+/* — a chamada, em papel e não em botão — */
+.toque{
+  display:inline-flex;flex-direction:column;align-items:center;gap:9px;
+  padding:0;font-family:var(--ff-titulo);font-size:10.5px;font-weight:500;
+  letter-spacing:.28em;text-transform:uppercase;color:var(--ouro-dk);
+  transition:opacity .4s,color .3s;
+  animation:chama 3.4s var(--ease) infinite;
+}
+.toque:hover{color:var(--ouro)}
+.toque:active{opacity:.6}
+.toque[disabled]{opacity:.35;cursor:progress;animation:none}
+.toque__regua{display:flex;align-items:center;gap:8px;color:var(--ouro)}
+.toque__regua::before,.toque__regua::after{content:"";height:1px;width:34px;
+  background:linear-gradient(90deg,transparent,currentColor)}
+.toque__regua::after{background:linear-gradient(90deg,currentColor,transparent)}
+.toque__regua span{font-size:8px;letter-spacing:.3em}
+@keyframes chama{0%,100%{opacity:1}50%{opacity:.62}}
+
+.status{margin:16px 0 0;font-family:var(--ff-titulo);font-size:9px;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--tinta-2);
+  opacity:.7;min-height:13px}
+.barra{width:96px;height:1.5px;margin:8px auto 0;background:rgba(140,95,28,.16);overflow:hidden}
+.barra i{display:block;height:100%;width:0;background:var(--ouro);transition:width .25s linear}
+
+/* ══════════════════════════════════════════════════════════════════════
+   A PASSAGEM — só fumaça dourada e luz, por cima de tudo
+══════════════════════════════════════════════════════════════════════ */
+#fumaca{position:fixed;inset:0;z-index:55;pointer-events:none}
+.clarao{
+  position:fixed;inset:0;z-index:54;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 50% 58%,rgba(255,244,220,.92),rgba(255,244,220,0) 62%);
+}
+.clarao.acende{animation:acender 2.1s var(--ease) forwards}
+@keyframes acender{0%{opacity:0}18%{opacity:.62}100%{opacity:0}}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ATO 2 — O CONVITE, emergindo por baixo da fumaça
+══════════════════════════════════════════════════════════════════════ */
+.convite{
+  position:relative;z-index:10;
+  opacity:0;transform:scale(.965);filter:blur(7px);
+  transition:opacity 1.6s var(--ease),transform 2s var(--slow),filter 1.5s var(--ease);
+}
+.convite.viva{opacity:1;transform:none;filter:none}
+
+.secao{max-width:var(--maxw);margin:0 auto;padding:clamp(52px,13vw,84px) calc(var(--pad) + 10px)}
+.secao+.secao{border-top:1px solid rgba(140,95,28,.16)}
+
+.entra{opacity:0;transform:translateY(22px);
+  transition:opacity .95s var(--ease),transform .95s var(--slow)}
+.entra.viva{opacity:1;transform:none}
+.d1{transition-delay:.11s}.d2{transition-delay:.22s}.d3{transition-delay:.33s}
+
+.titulo{font-family:var(--ff-titulo);font-weight:500;
+  font-size:clamp(21px,6vw,27px);letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ouro-dk);line-height:1.32;margin:0 0 6px}
+.script{font-family:var(--ff-script);font-size:clamp(30px,9vw,40px);
+  color:var(--ouro);line-height:1.08;margin:0 0 18px;font-weight:400}
+.texto{color:var(--tinta);margin:0 0 14px}
+.texto strong{font-weight:600;color:var(--tinta)}
+
+.divisor{display:flex;align-items:center;gap:9px;justify-content:center;margin:22px 0}
+.divisor::before,.divisor::after{content:"";height:1px;flex:0 1 52px;
+  background:linear-gradient(90deg,transparent,var(--ouro))}
+.divisor::after{background:linear-gradient(90deg,var(--ouro),transparent)}
+.divisor span{color:var(--ouro);font-size:9px;letter-spacing:.3em}
+
+.abre{text-align:center}
+.quadro{
+  position:relative;margin:0 0 26px;padding:9px;background:var(--papel);
+  border:1px solid var(--linha);
+  box-shadow:0 12px 34px rgba(140,95,28,.16),
+             inset 0 0 0 3px var(--papel),inset 0 0 0 4px rgba(192,139,52,.28);
+}
+.quadro video{width:100%;height:auto;display:block}
+
+.contagem{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:24px 0 8px}
+.contagem div{padding:15px 3px;text-align:center;background:var(--papel);
+  border:1px solid rgba(140,95,28,.2)}
+.contagem b{display:block;font-family:var(--ff-titulo);font-weight:600;
+  font-size:clamp(19px,5.8vw,24px);color:var(--ouro-dk);
+  font-variant-numeric:tabular-nums;line-height:1.14}
+.contagem span{font-family:var(--ff-titulo);font-size:8px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--tinta-2)}
+
+.linha{display:flex;gap:15px;align-items:flex-start;padding:18px 0;
+  border-bottom:1px solid rgba(140,95,28,.14)}
+.linha:last-child{border-bottom:0}
+.linha__ic{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid var(--linha);color:var(--ouro);background:var(--papel)}
+.linha__ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.rot{font-family:var(--ff-titulo);font-size:9px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--ouro-dk);margin:0 0 3px}
+.val{margin:0;font-size:19px;color:var(--tinta);line-height:1.36}
+.sub{margin:2px 0 0;font-size:16px;color:var(--tinta-2)}
+.elo{display:inline-block;margin-top:8px;font-family:var(--ff-titulo);font-size:10px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ouro-dk);
+  text-decoration:none;border-bottom:1px solid var(--linha);padding-bottom:3px}
+
+.campo{margin-bottom:15px}
+.campo label{display:block;font-family:var(--ff-titulo);font-size:9px;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--ouro-dk);margin-bottom:6px}
+.campo input,.campo select,.campo textarea{
+  width:100%;padding:12px 13px;background:var(--papel);
+  border:1px solid rgba(140,95,28,.28);color:var(--tinta);
+  font-family:var(--ff-corpo);font-size:18px;
+  transition:border-color .3s;-webkit-appearance:none;appearance:none;border-radius:0;
+}
+.campo textarea{resize:vertical;min-height:70px}
+.campo select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23C08B34' stroke-width='1.4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;background-size:11px;padding-right:34px}
+.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--ouro);outline:none}
+.campo input::placeholder,.campo textarea::placeholder{color:rgba(107,74,44,.34)}
+
+.botao{display:block;width:100%;padding:15px;text-align:center;
+  background:linear-gradient(180deg,var(--ouro-hi),var(--ouro));
+  color:#4A310B;font-family:var(--ff-titulo);font-weight:600;font-size:11px;
+  letter-spacing:.2em;text-transform:uppercase;text-decoration:none;
+  border:1px solid var(--ouro-dk);transition:filter .3s,transform .18s}
+.botao:hover{filter:brightness(1.07)}
+.botao:active{transform:scale(.985)}
+.botao--vazado{background:var(--papel);color:var(--ouro-dk);border-color:var(--linha);font-weight:500}
+.botao--vazado:hover{background:#fff}
+.aviso{font-size:16px;color:var(--tinta-2);text-align:center;margin:11px 0 0}
+.aviso.erro{color:#B4553F}
+
+.presente{padding:17px;background:var(--papel);border:1px solid rgba(140,95,28,.2);margin-bottom:11px}
+.presente h3{margin:0 0 4px;font-family:var(--ff-titulo);font-weight:500;font-size:13px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ouro-dk)}
+.presente p{margin:0;color:var(--tinta-2)}
+.pix{margin-top:10px;padding:10px 12px;background:var(--creme-2);
+  border:1px dashed var(--linha);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pix code{font-family:var(--ff-corpo);font-size:16px;color:var(--tinta);word-break:break-all}
+.pix button{font-family:var(--ff-titulo);font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ouro-dk);white-space:nowrap}
+
+.fim{text-align:center;padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+.fim__script{font-family:var(--ff-script);font-size:32px;color:var(--ouro);margin:12px 0 4px}
+.fim__nota{font-family:var(--ff-titulo);font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--tinta-2)}
+.fim__acoes{display:flex;gap:9px;margin-top:26px}
+.fim__acoes>*{flex:1}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important}
+  .entra{opacity:1;transform:none}
+  .convite{filter:none;transform:none}
+  .ceu{display:none}
+}
+</style>
+</head>
+<body class="travado">
+
+<div class="moldura" aria-hidden="true">
+  <div class="progresso" id="progresso"></div>
+  <div class="canto ts"></div><div class="canto td"></div>
+  <div class="canto bs"></div><div class="canto bd"></div>
+</div>
+<div class="ceu" id="ceu" aria-hidden="true"></div>
+
+<!-- ═══ ATO 1 — ENVELOPE ═══ -->
+<section class="capa" id="capa" aria-label="Capa do convite">
+  <div class="capa__inner">
+    <p class="sobrescrito" id="cp-tipo">Chá Revelação</p>
+    <p class="capa__script" id="cp-script">Menino ou Menina?</p>
+
+    <div class="palco">
+      <div class="env" id="envelope">
+        <div class="env__fundo"><div class="papel-tex"></div></div>
+        <div class="env__cartao" id="cartao"></div>
+        <div class="env__vinco"></div>
+        <div class="env__frente"><div class="papel-tex"></div></div>
+        <div class="env__aba">
+          <span class="face"><i class="papel-tex" style="position:absolute;inset:0"></i></span>
+          <span class="forro"></span>
+        </div>
+        <div class="env__luz"></div>
+        <div class="env__lacre" id="lacre"></div>
+      </div>
+    </div>
+
+    <button class="toque" id="abrir" type="button">
+      <span class="toque__regua"><span>&#10022;</span></span>
+      Toque para abrir
+    </button>
+    <p class="status" id="status">Preparando o envelope</p>
+    <div class="barra" id="barra" aria-hidden="true"><i></i></div>
+  </div>
+</section>
+
+<!-- ═══ A PASSAGEM ═══ -->
+<canvas id="fumaca" aria-hidden="true"></canvas>
+<div class="clarao" id="clarao" aria-hidden="true"></div>
+
+<!-- ═══ ATO 2 — O CONVITE ═══ -->
+<main class="convite" id="convite">
+
+  <section class="secao abre">
+    <div class="quadro entra">
+      <video id="vdCard" playsinline webkit-playsinline muted loop preload="auto"
+             disablepictureinpicture poster="./poster.jpg"></video>
+    </div>
+    <p class="sobrescrito entra d1" id="tx-tipo">Chá Revelação</p>
+    <p class="script entra d1" id="tx-script">Menino ou Menina?</p>
+    <div class="divisor entra d2"><span>&#10022;</span></div>
+    <p class="texto entra d2" id="tx-mensagem"></p>
+  </section>
+
+  <section class="secao">
+    <p class="sobrescrito entra">Falta pouco</p>
+    <p class="script entra">A revelação</p>
+    <div class="contagem entra d1" id="contagem" role="timer">
+      <div><b id="c-d">--</b><span>dias</span></div>
+      <div><b id="c-h">--</b><span>horas</span></div>
+      <div><b id="c-m">--</b><span>min</span></div>
+      <div><b id="c-s">--</b><span>seg</span></div>
+    </div>
+    <p class="texto entra d2" id="tx-quando" style="text-align:center"></p>
+  </section>
+
+  <section class="secao">
+    <p class="sobrescrito entra">Anote na agenda</p>
+    <p class="script entra">Quando e onde</p>
+
+    <div class="linha entra d1">
+      <div class="linha__ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></div>
+      <div>
+        <p class="rot">Data</p>
+        <p class="val" id="v-data">—</p>
+        <p class="sub" id="v-hora">—</p>
+        <a class="elo" href="#" id="ics">Adicionar à agenda</a>
+      </div>
+    </div>
+
+    <div class="linha entra d2">
+      <div class="linha__ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+      <div>
+        <p class="rot">Local</p>
+        <p class="val" id="v-local">—</p>
+        <p class="sub" id="v-end">—</p>
+        <a class="elo" id="v-mapa" target="_blank" rel="noopener">Ver no mapa</a>
+      </div>
+    </div>
+
+    <div class="linha entra d3">
+      <div class="linha__ic"><svg viewBox="0 0 24 24"><path d="M6 3h12l-1.4 6.2a5 5 0 0 1-9.2 0z"/><path d="M9 21h6M12 14v7"/></svg></div>
+      <div>
+        <p class="rot">Traje</p>
+        <p class="val" id="v-traje">—</p>
+        <p class="sub">Escolha um time e venha vestido dele.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao">
+    <p class="sobrescrito entra">Confirmação</p>
+    <p class="script entra">Você vem?</p>
+    <p class="texto entra d1">Confirme até <strong id="v-rsvpate">—</strong>. A mensagem já vai pronta no WhatsApp.</p>
+
+    <div class="entra d2">
+      <div class="campo">
+        <label for="f-nome">Seu nome</label>
+        <input id="f-nome" type="text" autocomplete="name" placeholder="Como devemos te chamar">
+      </div>
+      <div class="campo">
+        <label for="f-qtd">Quantas pessoas</label>
+        <select id="f-qtd">
+          <option value="1">1 pessoa</option>
+          <option value="2">2 pessoas</option>
+          <option value="3">3 pessoas</option>
+          <option value="4">4 pessoas</option>
+          <option value="5">5 ou mais</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="f-recado">Recado para os pais (opcional)</label>
+        <textarea id="f-recado" placeholder="Deixe um recado carinhoso"></textarea>
+      </div>
+      <button class="botao" id="enviar" type="button">Confirmar no WhatsApp</button>
+      <p class="aviso" id="aviso">Abre o WhatsApp com a mensagem já escrita.</p>
+    </div>
+  </section>
+
+  <section class="secao" id="sec-presentes">
+    <p class="sobrescrito entra">Se quiser mimar</p>
+    <p class="script entra">Presentes</p>
+    <p class="texto entra d1">Sua presença já basta. Mas se fizer questão, deixamos algumas ideias.</p>
+
+    <div class="presente entra d2" id="bloco-lista">
+      <h3>Lista de presentes</h3>
+      <p>Fraldas, itens de banho e enxoval, com opções para todos os bolsos.</p>
+      <a class="elo" id="v-lista" target="_blank" rel="noopener">Abrir a lista</a>
+    </div>
+
+    <div class="presente entra d2" id="bloco-pix">
+      <h3>Cota do enxoval</h3>
+      <p>Prefere contribuir por Pix? Toda ajuda vira algo para o bebê.</p>
+      <div class="pix"><code id="pix-chave">—</code><button type="button" id="copiar-pix">Copiar</button></div>
+    </div>
+  </section>
+
+  <section class="secao fim">
+    <div class="divisor entra"><span>&#10022;</span></div>
+    <p class="sobrescrito entra">Com carinho</p>
+    <p class="fim__script entra d1" id="fim-nomes">Mamãe e papai</p>
+    <p class="fim__nota entra d1" id="fim-data">—</p>
+    <div class="fim__acoes entra d2">
+      <button class="botao botao--vazado" id="rever" type="button">Rever abertura</button>
+      <button class="botao botao--vazado" id="compartilhar" type="button">Compartilhar</button>
+    </div>
+  </section>
+</main>
+
+<audio id="trilha" loop preload="none"></audio>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   CONFIG — é só aqui que você mexe para cada festa
+══════════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  tipo:      "Chá Revelação",
+  script:    "Menino ou Menina?",
+  assinatura:"Mamãe e papai",
+  monograma: "B",                        // letra do lacre de cera
+
+  mensagem:
+    "Mamãe e papai estão muito felizes com minha chegada, por isso a ansiedade " +
+    "de saber quem sou já tem data e hora para acabar. Existem momentos especiais " +
+    "que, quando partilhados com quem amamos, se tornam inesquecíveis. " +
+    "Contamos com a sua presença.",
+
+  quando:    "2026-09-13T15:00:00-03:00",
+  rsvpAte:   "06 de setembro",
+
+  local:     "Minha Casa",
+  endereco:  "Rua Roan Feiden, 69 — Sertão Santana, RS",
+  mapa:      "https://www.google.com/maps/search/?api=1&query=Rua+Roan+Feiden+69+Sert%C3%A3o+Santana+RS",
+  traje:     "Rosa ou azul",
+
+  whatsapp:  "55519XXXXXXXX",            // só números: 55 + DDD + número
+  listaUrl:  "",                         // "" esconde o bloco da lista
+  pix:       "",                         // "" esconde o bloco do Pix
+
+  video:     "./convite.mp4",            // sua arte do Canva
+  arte:      "./poster.jpg",             // primeiro quadro — é o que sai do envelope
+  musica:    "",                         // ex.: "./trilha.mp3" — "" desliga
+
+  // ── ritmo da passagem, em segundos ────────────────────────────────
+  fumacaEm:   0.95,   // quando a fumaça começa a subir
+  conviteEm:  1.70,   // quando o convite começa a emergir por baixo dela
+  sopro:      1.45,   // por quanto tempo a fumaça continua nascendo
+  densidade:  1.00,   // 0.6 = mais discreta · 1.6 = mais encorpada
+};
+
+/* ══════════════════════════════════════════════════════════════════════ */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const calmo = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- moldura e céu ------------------------------------------- */
+const CANTO = '<svg viewBox="0 0 60 60" aria-hidden="true">'+
+  '<path d="M3 59V17C3 9 9 3 17 3h42v2H17C10 5 5 10 5 17v42z"/>'+
+  '<path d="M11 59V21c0-6 4-10 10-10h38v1.6H21c-5 0-8.4 3.6-8.4 8.4v38z" opacity=".62"/>'+
+  '<path d="M14 32c6-7 13-6 17-2-5 5-12 6-17 2z"/>'+
+  '<path d="M32 14c7 6 6 13 2 17-5-5-6-12-2-17z"/>'+
+  '<circle cx="19" cy="19" r="2.4"/>'+
+  '<circle cx="40" cy="9" r="1.4" opacity=".7"/>'+
+  '<circle cx="9" cy="40" r="1.4" opacity=".7"/></svg>';
+$$(".canto").forEach(c => c.innerHTML = CANTO);
+
+/* ---------- o lacre de cera ------------------------------------------
+   Borda irregular (cera não é círculo), brilho especular em cima,
+   monograma afundado com sombra clara embaixo e escura em cima.        */
+const BLOB = "M90.8 50.0C90.6 56.1 89.5 62.3 87.2 67.9C84.9 73.6 81.6 80.1 76.9 83.8C72.2 87.4 65.1 88.8 59.1 89.8C53.1 90.8 46.7 91.2 40.9 90.0C35.0 88.8 28.5 86.2 24.2 82.4C19.8 78.6 17.1 72.5 14.5 67.1C12.0 61.7 9.3 55.9 8.9 50.0C8.6 44.1 10.0 37.5 12.5 31.9C14.9 26.4 18.7 20.1 23.5 16.8C28.3 13.4 35.4 13.0 41.3 12.1C47.2 11.1 53.4 9.8 58.9 11.0C64.4 12.3 69.3 16.2 74.2 19.6C79.2 23.0 85.6 26.4 88.4 31.5C91.1 36.6 90.9 43.9 90.8 50.0Z";
+function desenharLacre(letra){
+  $("#lacre").innerHTML =
+  '<svg viewBox="0 0 100 100" aria-hidden="true">'+
+    '<defs>'+
+      '<radialGradient id="cera" cx="34%" cy="26%" r="78%">'+
+        '<stop offset="0" stop-color="#F0D69A"/>'+
+        '<stop offset="42%" stop-color="#C88F32"/>'+
+        '<stop offset="100%" stop-color="#734A0F"/>'+
+      '</radialGradient>'+
+      '<radialGradient id="brilho" cx="32%" cy="22%" r="42%">'+
+        '<stop offset="0" stop-color="rgba(255,244,214,.85)"/>'+
+        '<stop offset="100%" stop-color="rgba(255,244,214,0)"/>'+
+      '</radialGradient>'+
+    '</defs>'+
+    '<path d="'+BLOB+'" fill="url(#cera)"/>'+
+    '<path d="'+BLOB+'" fill="url(#brilho)"/>'+
+    '<path d="'+BLOB+'" fill="none" stroke="rgba(88,56,10,.5)" stroke-width="1.1"/>'+
+    '<circle cx="50" cy="50" r="31" fill="none" stroke="rgba(80,50,8,.34)" stroke-width="1.4"/>'+
+    '<circle cx="50" cy="50" r="31" fill="none" stroke="rgba(255,232,180,.30)" stroke-width="1.4"'+
+      ' transform="translate(0,-1.2)"/>'+
+    '<text x="50" y="52.4" fill="rgba(255,235,186,.35)">'+letra+'</text>'+
+    '<text x="50" y="51" fill="#5E3D0C">'+letra+'</text>'+
+  '</svg>';
+}
+
+(function ceu(){
+  if(calmo) return;
+  const c = $("#ceu");
+  for(let i=0;i<16;i++){
+    const s = document.createElement("i");
+    s.textContent = "\u2726";
+    s.style.left = (Math.random()*94+3)+"%";
+    s.style.top  = (Math.random()*96+2)+"%";
+    s.style.fontSize = (7+Math.random()*8)+"px";
+    s.style.animationDelay = (Math.random()*6)+"s";
+    c.appendChild(s);
+  }
+})();
+
+/* ---------- preenche tudo a partir do CONFIG ------------------------ */
+const dt = new Date(CONFIG.quando);
+const fData = new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"long",year:"numeric",timeZone:"America/Sao_Paulo"});
+const fDia  = new Intl.DateTimeFormat("pt-BR",{weekday:"long",timeZone:"America/Sao_Paulo"});
+const fHora = new Intl.DateTimeFormat("pt-BR",{hour:"2-digit",minute:"2-digit",timeZone:"America/Sao_Paulo"});
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+
+(function preencher(){
+  document.title = `${CONFIG.tipo} — ${CONFIG.script}`;
+  $("#cp-tipo").textContent = $("#tx-tipo").textContent = CONFIG.tipo;
+  $("#cp-script").textContent = $("#tx-script").textContent = CONFIG.script;
+  desenharLacre(CONFIG.monograma);
+  $("#cartao").style.backgroundImage = `url("${CONFIG.arte}")`;
+  $("#tx-mensagem").textContent = CONFIG.mensagem;
+  $("#fim-nomes").textContent = CONFIG.assinatura;
+
+  $("#v-data").textContent = `${cap(fDia.format(dt))}, ${fData.format(dt)}`;
+  $("#v-hora").textContent = `às ${fHora.format(dt)}`;
+  $("#v-local").textContent = CONFIG.local;
+  $("#v-end").textContent = CONFIG.endereco;
+  $("#v-mapa").href = CONFIG.mapa;
+  $("#v-traje").textContent = CONFIG.traje;
+  $("#v-rsvpate").textContent = CONFIG.rsvpAte;
+  $("#fim-data").textContent = `${fData.format(dt)} · ${CONFIG.local}`;
+  $("#tx-quando").textContent = `${cap(fDia.format(dt))}, ${fData.format(dt)}, às ${fHora.format(dt)}.`;
+
+  if(CONFIG.listaUrl) $("#v-lista").href = CONFIG.listaUrl; else $("#bloco-lista").remove();
+  if(CONFIG.pix) $("#pix-chave").textContent = CONFIG.pix; else $("#bloco-pix").remove();
+  if(CONFIG.musica) $("#trilha").src = CONFIG.musica;
+  if(!$("#bloco-lista") && !$("#bloco-pix")) $("#sec-presentes").remove();
+})();
+
+/* ---------- pré-carrega o vídeo com progresso real ------------------ */
+const vdCard = $("#vdCard");
+const barra = $("#barra").firstElementChild, status = $("#status"), btn = $("#abrir");
+let videoOk = false;
+btn.disabled = true;
+
+function pronto(){ videoOk=true; barra.style.width="100%"; status.textContent="O envelope está lacrado"; btn.disabled=false; }
+function semVideo(){ videoOk=false; barra.parentElement.style.display="none"; status.textContent="O envelope está lacrado"; btn.disabled=false; }
+
+(async function carregar(){
+  if(!CONFIG.video) return semVideo();
+  try{
+    const r = await fetch(CONFIG.video);
+    if(!r.ok) throw 0;
+    const total = +r.headers.get("content-length")||0, rd = r.body.getReader();
+    const partes=[]; let lido=0;
+    for(;;){
+      const {done,value} = await rd.read(); if(done) break;
+      partes.push(value); lido += value.length;
+      if(total) barra.style.width = Math.min(96,(lido/total)*100)+"%";
+    }
+    vdCard.src = URL.createObjectURL(new Blob(partes,{type:"video/mp4"}));
+    vdCard.load(); pronto();
+  }catch(e){
+    vdCard.src = CONFIG.video; vdCard.load();
+    vdCard.addEventListener("loadeddata",pronto,{once:true});
+    vdCard.addEventListener("error",semVideo,{once:true});
+    setTimeout(()=>{ if(!videoOk) pronto(); },7000);
+  }
+})();
+
+/* ══════════════════════════════════════════════════════════════════════
+   A FUMAÇA
+   Sem tremor e sem estouro seco: as baforadas nascem ao longo de ~1,3 s,
+   sobem devagar e vão abrindo. O convite emerge por baixo enquanto elas
+   ainda estão no ar, então nunca existe um corte entre uma cena e outra.
+══════════════════════════════════════════════════════════════════════ */
+const cv = $("#fumaca"), ctx = cv.getContext("2d");
+let puffs=[], faiscas=[], anim=null, dpr=Math.min(devicePixelRatio||1,2);
+
+function medirCanvas(){ cv.width=innerWidth*dpr; cv.height=innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+addEventListener("resize",medirCanvas); medirCanvas();
+
+function soprar(){
+  const cx = innerWidth/2, cy = innerHeight*0.585;
+  const d = CONFIG.densidade, janela = CONFIG.sopro*1000;
+
+  for(let i=0;i<Math.round(76*d);i++){
+    const p = i/Math.round(76*d);                 // 0 no começo do sopro, 1 no fim
+    puffs.push({
+      x:cx+(Math.random()-.5)*(60+p*150),
+      y:cy+(Math.random()-.5)*26,
+      r:16+Math.random()*34,
+      vx:(Math.random()-.5)*(.7+p*1.1),
+      vy:-(.42+Math.random()*1.5),
+      cr:.42+Math.random()*.62,
+      v:(.16+Math.random()*.20)*(1-p*.35),        // as últimas nascem mais tênues
+      atraso:p*janela*(.75+Math.random()*.5)
+    });
+  }
+  for(let i=0;i<Math.round(150*d);i++){
+    const p = Math.random();
+    faiscas.push({
+      x:cx+(Math.random()-.5)*80, y:cy+(Math.random()-.5)*24,
+      vx:(Math.random()-.5)*2.0, vy:-(.9+Math.random()*3.2),
+      r:.45+Math.random()*1.7, v:0, alvo:.55+Math.random()*.45,
+      d:.0035+Math.random()*.008, atraso:p*janela*.8
+    });
+  }
+}
+
+function pintar(t0){
+  return function passo(t){
+    const dec = t-t0;
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+
+    for(let i=puffs.length-1;i>=0;i--){
+      const p=puffs[i];
+      if(dec<p.atraso) continue;
+      p.x+=p.vx; p.y+=p.vy; p.vy*=.9955; p.vx*=.998; p.r+=p.cr; p.v*=.9955;
+      if(p.v<.004||p.r>innerWidth){ puffs.splice(i,1); continue; }
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      g.addColorStop(0,   `rgba(206,161,99,${p.v*.86})`);
+      g.addColorStop(.48, `rgba(228,198,155,${p.v*.46})`);
+      g.addColorStop(1,   "rgba(236,214,180,0)");
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill();
+    }
+
+    ctx.shadowBlur=7; ctx.shadowColor="rgba(192,139,52,.8)";
+    for(let i=faiscas.length-1;i>=0;i--){
+      const f=faiscas[i];
+      if(dec<f.atraso) continue;
+      if(f.v<f.alvo && !f.caindo){ f.v=Math.min(f.alvo,f.v+.06); }   // acende macio
+      else { f.caindo=true; f.v-=f.d; }
+      f.x+=f.vx; f.y+=f.vy; f.vy+=.022; f.vx*=.992;
+      if(f.v<=0){ faiscas.splice(i,1); continue; }
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.283);
+      ctx.fillStyle=`rgba(240,214,154,${f.v})`; ctx.fill();
+    }
+    ctx.shadowBlur=0;
+
+    if(puffs.length||faiscas.length) anim=requestAnimationFrame(passo);
+    else { ctx.clearRect(0,0,innerWidth,innerHeight); anim=null; }
+  };
+}
+function limparFumaca(){
+  if(anim) cancelAnimationFrame(anim);
+  anim=null; puffs=[]; faiscas=[];
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+}
+
+/* ---------- a sequência --------------------------------------------- */
+const capa=$("#capa"), convite=$("#convite"), envelope=$("#envelope"), clarao=$("#clarao");
+let aberto=false, relogios=[];
+const marcar = (fn,ms) => relogios.push(setTimeout(fn,ms));
+
+function abrir(){
+  if(aberto || btn.disabled) return;
+  aberto=true; btn.disabled=true;
+  envelope.classList.add("aberto");
+
+  // destrava mídia dentro do mesmo toque (exigência do Safari)
+  if(videoOk){ const p=vdCard.play(); if(p&&p.then) p.then(()=>vdCard.pause()).catch(()=>{}); }
+  if(CONFIG.musica){ const a=$("#trilha"); a.volume=.26; a.play().then(()=>a.pause()).catch(()=>{}); }
+
+  if(calmo){ entregar(); return; }
+
+  marcar(()=>{
+    soprar();
+    if(!anim) anim=requestAnimationFrame(pintar(performance.now()));
+    clarao.classList.add("acende");
+    if(navigator.vibrate) navigator.vibrate(18);
+    // a fumaça sai do envelope ainda visível; só depois a capa se dissolve
+    marcar(()=>capa.classList.add("saiu"),300);
+  }, CONFIG.fumacaEm*1000);
+
+  marcar(entregar, CONFIG.conviteEm*1000);
+}
+
+function entregar(){
+  capa.classList.add("saiu");
+  convite.classList.add("viva");
+  if(videoOk) vdCard.play().catch(()=>{});
+  if(CONFIG.musica){ const a=$("#trilha"); a.volume=.26; a.play().catch(()=>{}); }
+  marcar(()=>document.body.classList.remove("travado"), calmo?0:700);
+  observar();
+}
+
+btn.addEventListener("click",abrir);
+envelope.addEventListener("click",abrir);
+
+/* ---------- entrada por scroll + progresso na moldura --------------- */
+let observando=false;
+function observar(){
+  if(observando) return; observando=true;
+
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("viva"); io.unobserve(e.target); }});
+  },{threshold:.14,rootMargin:"0px 0px -6% 0px"});
+  $$(".entra").forEach(el=>io.observe(el));
+
+  const pr=$("#progresso"); let tick=false;
+  const medir=()=>{
+    const h=document.documentElement.scrollHeight-innerHeight;
+    pr.style.width = (h>0 ? Math.min(100,(scrollY/h)*100) : 0)+"%";
+    tick=false;
+  };
+  addEventListener("scroll",()=>{ if(!tick){ tick=true; requestAnimationFrame(medir); }},{passive:true});
+  medir();
+
+  const vo=new IntersectionObserver(es=>{
+    es.forEach(e=> e.isIntersecting ? vdCard.play().catch(()=>{}) : vdCard.pause());
+  },{threshold:.25});
+  vo.observe(vdCard);
+}
+
+/* ---------- contagem regressiva ------------------------------------- */
+(function(){
+  const alvo=dt.getTime(), p2=n=>String(n).padStart(2,"0");
+  const cd=$("#c-d"),ch=$("#c-h"),cm=$("#c-m"),cs=$("#c-s");
+  setInterval(()=>{
+    let s=Math.floor((alvo-Date.now())/1000);
+    if(s<=0){ $("#contagem").innerHTML='<div style="grid-column:1/-1"><b>É hoje</b><span>nos vemos lá</span></div>'; return; }
+    cd.textContent=p2(Math.floor(s/86400)); s%=86400;
+    ch.textContent=p2(Math.floor(s/3600));  s%=3600;
+    cm.textContent=p2(Math.floor(s/60));
+    cs.textContent=p2(s%60);
+  },1000);
+})();
+
+/* ---------- confirmação no WhatsApp ---------------------------------- */
+$("#enviar").addEventListener("click",()=>{
+  const nome=$("#f-nome").value.trim(), av=$("#aviso");
+  if(nome.length<2){
+    av.textContent="Escreva seu nome para a gente saber quem confirmou.";
+    av.classList.add("erro"); $("#f-nome").focus(); return;
+  }
+  av.classList.remove("erro"); av.textContent="Abrindo o WhatsApp…";
+  const recado=$("#f-recado").value.trim();
+  const msg =
+    `Oi! Confirmo presença no ${CONFIG.tipo.toLowerCase()}.\n\n`+
+    `Nome: ${nome}\n`+
+    `Pessoas: ${$("#f-qtd").value}\n`+
+    (recado ? `Recado: ${recado}\n` : "")+
+    `\n${fData.format(dt)} · ${CONFIG.local}`;
+  window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank","noopener");
+});
+
+/* ---------- agenda (.ics) -------------------------------------------- */
+$("#ics").addEventListener("click",e=>{
+  e.preventDefault();
+  const z=d=>d.toISOString().replace(/[-:]|\.\d{3}/g,"");
+  const fim=new Date(dt.getTime()+3*3600e3);
+  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//convite//PT-BR","BEGIN:VEVENT",
+    `UID:${Date.now()}@convite`,`DTSTAMP:${z(new Date())}`,`DTSTART:${z(dt)}`,`DTEND:${z(fim)}`,
+    `SUMMARY:${CONFIG.tipo} — ${CONFIG.script}`,
+    `LOCATION:${CONFIG.local}, ${CONFIG.endereco}`,
+    `DESCRIPTION:Traje: ${CONFIG.traje}`,
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:É amanhã!","END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));
+  a.download="convite.ics"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+});
+
+/* ---------- copiar Pix / compartilhar -------------------------------- */
+const cop=$("#copiar-pix");
+if(cop) cop.addEventListener("click",async()=>{
+  try{ await navigator.clipboard.writeText(CONFIG.pix); cop.textContent="Copiado"; }
+  catch(e){ cop.textContent="Copie manualmente"; }
+  setTimeout(()=>cop.textContent="Copiar",2200);
+});
+$("#compartilhar").addEventListener("click",async()=>{
+  const d={title:`${CONFIG.tipo} — ${CONFIG.script}`,text:"Toque para abrir o envelope.",url:location.href};
+  if(navigator.share){ try{ await navigator.share(d); return; }catch(e){} }
+  try{ await navigator.clipboard.writeText(location.href); $("#compartilhar").textContent="Link copiado"; }
+  catch(e){}
+  setTimeout(()=>$("#compartilhar").textContent="Compartilhar",2200);
+});
+
+/* ---------- rever a abertura ----------------------------------------- */
+$("#rever").addEventListener("click",()=>{
+  relogios.forEach(clearTimeout); relogios=[];
+  limparFumaca();
+  clarao.classList.remove("acende");
+  scrollTo(0,0);
+  document.body.classList.add("travado");
+  convite.classList.remove("viva");
+  vdCard.pause();
+  envelope.classList.remove("aberto");
+  capa.classList.remove("saiu");
+  $$(".entra").forEach(el=>el.classList.remove("viva"));
+  observando=false;
+  aberto=false; btn.disabled=false;
+});
+
+/* ---------- economia de bateria --------------------------------------- */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){ vdCard.pause(); $("#trilha").pause(); }
+});
+</script>
+</body>
+</html>
